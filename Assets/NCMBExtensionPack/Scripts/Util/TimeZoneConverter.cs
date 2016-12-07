@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NCMBExtended
+namespace NCMBExtension
 {
     public class TimeZoneConverter
     {

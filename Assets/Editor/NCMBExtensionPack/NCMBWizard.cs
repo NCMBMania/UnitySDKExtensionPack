@@ -40,6 +40,7 @@ namespace NCMBExtension
         {
             NCMBSettingsExtended.CreateAndInitiarize(applicationKey, clientKey, usePush, useAnalytics, androidSenderId, responseValidation, useExternalCryptedKeyFile);
 
+            //NCMB Managerもなかったら作る//
             if (GameObject.FindObjectOfType<NCMBManager>() == null)
             {
                 new GameObject("NCMBManager").AddComponent<NCMBManager>();

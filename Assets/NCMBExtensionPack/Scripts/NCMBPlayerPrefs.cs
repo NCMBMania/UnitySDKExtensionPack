@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace NCMBExtended
+namespace NCMBExtension
 {
     /// <summary>
     /// サーバー側が常に新しい設定//

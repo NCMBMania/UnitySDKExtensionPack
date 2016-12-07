@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using NCMB;
-using NCMBExtended;
+using NCMBExtension;
 
 public class CloudSaveSample : MonoBehaviour {
 

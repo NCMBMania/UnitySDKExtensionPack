@@ -1,14 +1,13 @@
-﻿using NCMBExtended;
+﻿using NCMBExtension;
 using UnityEngine;
 
-#pragma warning disable 0414 //利用されていないフィールドのWarningを消す//
+#pragma warning disable 0414 //利用されていないフィールドのWarningを表示しない//
 public class DeviceTakeOverSample : MonoBehaviour
 {
     public NCMBUserAuth ncmbUserAuth;
     public DeviceTakeOverCanvas canvas;
 
     private enum State { Title, NewGame, Main, Connecting, GenerateTakeOverCode, InputTakeOverCode }
-
 
     [SerializeField]
     private State currentState = State.Title;
@@ -238,10 +237,10 @@ public class DeviceTakeOverSample : MonoBehaviour
         NCMBPlayerPrefs.CopyIntServerToLocal("EnemyHitPoint");
 
         //データを取得したらサーバー側のアカウントを削除//
-        ncmbUserAuth.DeleteCurrentAccount(ReGenerateAccountAndSaveToLocacl, LogOutError);
+        ncmbUserAuth.DeleteCurrentAccount(ReGenerateAccount, LogOutError);
     }
 
-    private void ReGenerateAccountAndSaveToLocacl()
+    private void ReGenerateAccount()
     {
         //入力されたユーザー名でアカウントを再作成し、メインゲームへ遷移//
         ncmbUserAuth.AutoSignin(canvas.GetInputUserName(), LogOutAndChangeMainState, TryAgainInput);

@@ -9,8 +9,7 @@ using UnityEngine;
 /// 自動発行したパスワードをpersistentDataPathに保存//
 /// </summary>
 
-//Application.persistentDataPath : C:/Users/xxxx/AppData/LocalLow/CompanyName/ProductName//
-namespace NCMBExtended
+namespace NCMBExtension
 {
     public class NCMBUserAuth : MonoBehaviour
     {
@@ -19,14 +18,13 @@ namespace NCMBExtended
 
         public void Awake()
         {
+            //PC  C:/Users/xxxx/AppData/LocalLow/CompanyName/ProductName//
             loginDataFilePath = Application.persistentDataPath + "/" + logindataFileName;
 
 #if UNITY_iOS
-            //Application.temporaryCachePath
-            // var/mobile/Containers/Data/Application/xxxxxxxx - xxxx - xxxx - xxxx - xxxxxxxxxxxx/Library/Caches
-            // Strip "/Caches" from path 
-            //loginDataFilePath = Application.temporaryCachePath.Substring(0, Application.temporaryCachePath.Length - 6);
+            //iOS var/mobile/Containers/Data/Application/xxxxxxxx - xxxx - xxxx - xxxx - xxxxxxxxxxxx/Library/
             loginDataFilePath = Application.persistentDataPath + "/../Library/" + logindataFileName;
+
             //iCloud バックアップ不要ファイルに設定する//
             UnityEngine.iOS.Device.SetNoBackupFlag(loginDataFilePath);
 #endif
