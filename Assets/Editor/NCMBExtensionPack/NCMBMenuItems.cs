@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NCMB;
+using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -7,7 +8,7 @@ using UnityEngine;
 ///  WebView呼び出し参考：　http://qiita.com/kyusyukeigo/items/71db22676c6f4743913e
 /// </summary>
 
-namespace NCMB
+namespace NCMBExtension
 {
     public class NCMBMenuItems : EditorWindow
     {
@@ -46,6 +47,23 @@ namespace NCMB
             MethodInfo methodInfo = type.GetMethod("Create", Flags);
             return methodInfo.MakeGenericMethod(typeof(NCMBMenuItems));
 #endif
+        }
+
+        [MenuItem("NCMB/ログイン中のユーザー名を確認")]
+        private static void CheckCurrentUser()
+        {
+            if(NCMBUser.CurrentUser != null)
+            {
+                string name = NCMBUser.CurrentUser.UserName;
+                string objectId = NCMBUser.CurrentUser.ObjectId;
+
+                Debug.Log("UserName: " + name + ", ObjectId: " + objectId);
+            }
+            else
+            {
+                Debug.Log("Not Logged in");
+            }
+
         }
     }
 }
