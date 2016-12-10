@@ -121,7 +121,6 @@ namespace NCMBExtension
 
             string strdata = JsonUtility.ToJson(logindata);
 
-
             FileAESCrypter.EncryptToFile(strdata, loginDataFilePath);
         }
 

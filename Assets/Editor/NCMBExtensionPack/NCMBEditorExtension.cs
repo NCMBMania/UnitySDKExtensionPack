@@ -1,45 +1,34 @@
-﻿using NCMB;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using System.IO;
+using NCMB;
 
 /// <summary>
 /// NCMBログイン中にエディターの再生モードを停止した際、ユーザーキャッシュデータを削除する//
+/// NCMBUser._logOutEvent() と同じことをエディター終了時に行う。
 /// </summary>
 /// 
-[InitializeOnLoad]//エディタ起動時に実行される//
-public static class NCMBEditorExtension
+namespace NCMBExtension
 {
-    private static bool startPlaying = false;
-
-    static NCMBEditorExtension()
+    [InitializeOnLoad]//エディタ起動時に実行される//
+    public static class NCMBEditorExtension
     {
-        EditorApplication.update += (() =>
-         {
-             if (startPlaying)
-             {
-                 if (EditorApplication.isPlaying == false)
-                 {
-                     string filePath = Application.persistentDataPath + "/" + "currentUser";
-                    
-                     if (File.Exists(filePath))
-                     {
-                         File.Delete(filePath);
-                     }
+        static NCMBEditorExtension()
+        {
+            EditorApplication.playmodeStateChanged += (() =>
+            {
+                if (!EditorApplication.isPlaying && !EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    Debug.Log("再生停止");
+                    string filePath = Application.persistentDataPath + "/" + "currentUser";
 
-                     Debug.Log("NCMBログイン中にエディターの再生モードが停止されたため、currentUserキャッシュファイルの削除を行いました。");
-                     startPlaying = false;
-                 }
-             }
-             else
-             {
-                 if (EditorApplication.isPlayingOrWillChangePlaymode == true)
-                 {
-                     startPlaying = true;
-                     //Debug.Log("StartPlaying");
-                 }
-             }
-         });
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                        Debug.Log("NCMBログイン中にエディターの再生モードが停止されたため、currentUserキャッシュファイルの削除を行いました。");
+                    }
+                }
+            });
+        }
     }
-    
 }

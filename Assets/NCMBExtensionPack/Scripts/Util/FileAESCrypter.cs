@@ -43,7 +43,7 @@ public class FileAESCrypter
         }
     }
 
-    public static bool DecryptFromBytes(out string data, byte[] readedBytes)
+    public static string DecryptFromBytes(byte[] readedBytes)
     {
         byte[] initialVectorBytes = null;
         byte[] bodyBytes = null;
@@ -62,9 +62,7 @@ public class FileAESCrypter
         string initialVector = Encoding.UTF8.GetString(initialVectorBytes);
         DecryptAes(bodyBytes, initialVector, out bytes);
 
-        data = Encoding.UTF8.GetString(bytes);
-
-        return true;
+        return Encoding.UTF8.GetString(bytes);
     }
 
     public static bool DecryptFromFile(out string data, string savePath)

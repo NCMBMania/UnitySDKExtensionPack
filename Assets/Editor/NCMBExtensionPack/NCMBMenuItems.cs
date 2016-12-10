@@ -52,7 +52,7 @@ namespace NCMBExtension
         [MenuItem("NCMB/ログイン中のユーザー名を確認")]
         private static void CheckCurrentUser()
         {
-            if(NCMBUser.CurrentUser != null)
+            if(NCMBUser.CurrentUser != null && EditorApplication.isPlaying)
             {
                 string name = NCMBUser.CurrentUser.UserName;
                 string objectId = NCMBUser.CurrentUser.ObjectId;

@@ -1,30 +1,29 @@
-﻿using System;
+﻿using NCMB;
+using System;
 using UnityEngine;
-using NCMB;
 
 namespace NCMBExtension
 {
     public class NCMBSettingsExtended : NCMBSettings
     {
-        public static string keyJsonFileName = "Bin/NCMBKey";
-        public bool useNCMBKeyPairFile = false;
+        public bool useAPIKeyFile = true;
+        public string apiKeyFilePath = "Bin/NCMBAPIKey";
 
         public override void Awake()
         {
-            if (useNCMBKeyPairFile)
+            if (useAPIKeyFile && !string.IsNullOrEmpty(apiKeyFilePath))
             {
-                NCMBKeyPair ncmbKeyPair = new NCMBKeyPair();
-                TextAsset textAssets = Resources.Load("Bin/NCMBKey") as TextAsset;
+                APIKey ncmbKeyPair = new APIKey();
+                TextAsset textAssets = Resources.Load(apiKeyFilePath) as TextAsset;
 
-                if(textAssets == null)
+                if (textAssets == null)
                 {
-                    Debug.LogError("ログイン用のAPIキーファイルが存在しません。アプリキー設定ウィザードからファイルを作成して下さい。");
-                }else
+                    Debug.LogError("APIキーファイルが存在しません。NCMBメニューからAPIキーファイルを作成して下さい。");
+                }
+                else
                 {
-                    string strdata;
-
-                    FileAESCrypter.DecryptFromBytes(out strdata, textAssets.bytes);
-                    ncmbKeyPair = JsonUtility.FromJson<NCMBKeyPair>(strdata);
+                    string strdata = FileAESCrypter.DecryptFromBytes(textAssets.bytes);
+                    ncmbKeyPair = JsonUtility.FromJson<APIKey>(strdata);
 
                     applicationKey = ncmbKeyPair.applicationKey;
                     clientKey = ncmbKeyPair.clientKey;
@@ -43,45 +42,35 @@ namespace NCMBExtension
         /// <param name="useAnalytics"></param>
         /// <param name="androidSenderId"></param>
         /// <param name="responseValidation"></param>
-        /// <param name="isGenerateCryptedKeyPairFile"></param>
-        public static void CreateAndInitiarize(string applicationKey, string clientKey, bool usePush, bool useAnalytics, string androidSenderId, bool responseValidation, bool isGenerateCryptedKeyPairFile)
+        public void Initialize(string applicationKey, string clientKey, bool usePush, bool useAnalytics, string androidSenderId, bool responseValidation)
         {
-            NCMBSettingsExtended ncmbSettingsEx = FindObjectOfType<NCMBSettingsExtended>();
+            this.applicationKey = applicationKey;
+            this.clientKey = clientKey;
+            this.usePush = usePush;
+            this.useAnalytics = useAnalytics;
+            this.androidSenderId = androidSenderId;
+            this.responseValidation = responseValidation;
+        }
 
-            if (ncmbSettingsEx == null)
-            {
-                GameObject ncmbSettingObject = new GameObject("NCMBSettingsExtended");
-                ncmbSettingsEx = ncmbSettingObject.AddComponent<NCMBSettingsExtended>();
-            }
+        public void EnableToUseAPIKeyFile(string apiKeyFilePath)
+        {
+            this.applicationKey = string.Empty;
+            this.clientKey = string.Empty;
 
-            if (isGenerateCryptedKeyPairFile)
-            {
-                NCMBKeyPair ncmbKeyPair = new NCMBKeyPair();
-                ncmbKeyPair.applicationKey = applicationKey;
-                ncmbKeyPair.clientKey = clientKey;
+            this.apiKeyFilePath = apiKeyFilePath;
+            this.useAPIKeyFile = true;
+        }
 
-                string jsondata = JsonUtility.ToJson(ncmbKeyPair);
-                Debug.Log("jsondata" + jsondata);
-                FileAESCrypter.EncryptToFile(jsondata, Application.dataPath + "/Resources/" + keyJsonFileName + ".bytes");
-                ncmbSettingsEx.applicationKey = string.Empty;
-                ncmbSettingsEx.clientKey = string.Empty;
-            }
-            else
-            {
-                ncmbSettingsEx.applicationKey = applicationKey;
-                ncmbSettingsEx.clientKey = clientKey;
-            }
-
-            ncmbSettingsEx.usePush = usePush;
-            ncmbSettingsEx.useAnalytics = useAnalytics;
-            ncmbSettingsEx.androidSenderId = androidSenderId;
-            ncmbSettingsEx.responseValidation = responseValidation;
+        public void DisableToUseAPIKeyFile()
+        {
+            this.apiKeyFilePath = string.Empty;
+            this.useAPIKeyFile = false;
         }
     }
 }
 
 [Serializable]
-public class NCMBKeyPair
+public class APIKey //←Json化後にクラス名を含んでresources.assetsに入るので、難読化の場合はクラス名を変更してください//
 {
     [SerializeField]
     public string applicationKey, clientKey;
