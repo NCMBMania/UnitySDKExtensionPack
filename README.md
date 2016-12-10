@@ -5,6 +5,7 @@
 https://github.com/NIFTYCloud-mbaas/ncmb_unity/releases/tag/v2.2.0
 
 ## できること
+ * NCMBにアクセスするためのAPIキーを暗号化できる
  * iOSとAndroid間、または同OS間でセーブデータの引き継ぎ機能が実装できる
  * iOSとAndroidの両方から使えるクラウドセーブ機能が実装できる
  * PlayerPrefsっぽい書き方でクラウドセーブが使える
@@ -21,7 +22,6 @@ https://github.com/NIFTYCloud-mbaas/ncmb_unity/releases/tag/v2.2.0
 
 * Cloud Save Sample.scene：　クラウドセーブ機能のサンプル。（常にサーバーにセーブデータを保存する）
 * Device Take Over Sample.scene：　端末引き継ぎ機能のサンプル。（プレイヤーが能動的にセーブデータをサーバーに保存する）
-
 * SampleLauncher.scene：　上記のサンプルを実機で試す際のランチャ
 
 # 各スクリプトの説明
@@ -31,7 +31,8 @@ Unity Editorのメニューに「NCMB」を追加し、機能を呼び出せる�
 * 管理画面を開く (https://console.mb.cloud.nifty.com/ をエディタ内で開く）
 * 管理画面をブラウザで開く
 * ドキュメントをブラウザで開く
-* NCMBSettingsを生成するウィザード（アプリキーの暗号化ファイル生成もここから行う）
+* NCMBSettingsを生成するウィザード（APIキーの暗号化ファイル生成も行う）
+* APIキーの暗号化ファイルを再作成する
 * 現在ログイン中のユーザー情報をコンソールに出力する
 
 ## NCMBWizard
