@@ -66,6 +66,16 @@ namespace NCMBExtension
             this.apiKeyFilePath = string.Empty;
             this.useAPIKeyFile = false;
         }
+
+        public string GetApplicationKey()
+        {
+            return applicationKey;
+        }
+
+        public string GetClientKey()
+        {
+            return clientKey;
+        }
     }
 }
 

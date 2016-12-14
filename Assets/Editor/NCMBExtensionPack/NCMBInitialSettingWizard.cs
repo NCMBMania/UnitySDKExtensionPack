@@ -6,6 +6,8 @@ namespace NCMBExtension
 {
     public class NCMBInitialSettingWizard : ScriptableWizard
     {
+        private static NCMBInitialSettingWizard Instance;
+
         [Tooltip("NCMB管理画面の「アプリ設定」から取得する、アプリケーションキーを入力します")]
         [SerializeField]
         public string applicationKey = "";
@@ -34,7 +36,13 @@ namespace NCMBExtension
         [MenuItem("NCMB/初期設定ウィザードを開く", false, 0)]
         private static void Open()
         {
-            DisplayWizard<NCMBInitialSettingWizard>("初期設定ウィザード", "Create NCMB GameObjects");
+            if(Instance == null)
+            {
+                Instance = DisplayWizard<NCMBInitialSettingWizard>("NCMB初期設定ウィザード", "NCMBのオブジェクトを生成する");
+
+                Instance.titleContent.image = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/NCMBExtensionPack/Textures/icon.png");
+            }
+
         }
 
         private void OnWizardCreate()

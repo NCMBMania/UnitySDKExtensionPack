@@ -1,30 +1,11 @@
 ﻿using System;
 
-namespace NCMBExtension
+public static class TimeZoneConverter
 {
-    public class TimeZoneConverter
+    public static void UtcToLocal(this DateTime self)
     {
-        public static DateTime UtcToLocal(DateTime utcTime)
-        {
-            TimeZone zone = TimeZone.CurrentTimeZone;
-            TimeSpan offset = zone.GetUtcOffset(DateTime.Now);
-            return utcTime + offset;
-        }
-
-        public static DateTime UtcToLocal(DateTime? nullableUtcTime)
-        {
-            if (nullableUtcTime == null)
-            {
-                return new DateTime(0);
-            }
-            else
-            {
-                DateTime utctime = (DateTime)nullableUtcTime;
-
-                TimeZone zone = TimeZone.CurrentTimeZone;
-                TimeSpan offset = zone.GetUtcOffset(DateTime.Now);
-                return utctime + offset;
-            }
-        }
+        TimeZone zone = TimeZone.CurrentTimeZone;
+        TimeSpan offset = zone.GetUtcOffset(DateTime.Now);
+        self += offset;
     }
 }

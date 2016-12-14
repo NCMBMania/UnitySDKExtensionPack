@@ -203,7 +203,7 @@ namespace NCMBExtension
                 if (errorMessageCallback != null) errorMessageCallback("Not Logged in");
                 return false;
             }
-            else if (NCMBUser.CurrentUser.UpdateDate == null)
+            else if (!NCMBUser.CurrentUser.UpdateDate.HasValue)
             {
                 //オンラインに記録した形跡は？//
                 Debug.Log("Can't find server save time.");
@@ -218,7 +218,10 @@ namespace NCMBExtension
             else
             {
                 //サーバーとローカル、どっちのデータが新しい？//
-                DateTime serverSavedTime = TimeZoneConverter.UtcToLocal(NCMBUser.CurrentUser.UpdateDate);
+                DateTime serverSavedTime = NCMBUser.CurrentUser.UpdateDate.Value;
+
+                serverSavedTime.UtcToLocal();
+
                 DateTime localSavedTime = GetLocalSaveTimeStamp();
                 return serverSavedTime > localSavedTime;
             }

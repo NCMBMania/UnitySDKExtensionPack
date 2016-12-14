@@ -1,11 +1,12 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using NCMB;
 
 namespace NCMBExtension
 {
     public class NCMBGenerateAPIKeyFile : ScriptableWizard
     {
-        private static NCMBInitialSettingWizard ncmbWizard;
+        private static NCMBGenerateAPIKeyFile Instance;
 
         [Tooltip("NCMB管理画面の「アプリ設定」から取得する、アプリケーションキーを入力します")]
         [SerializeField]
@@ -20,7 +21,13 @@ namespace NCMBExtension
         [MenuItem("NCMB/APIキーファイルを再作成する", false, 0)]
         private static void Open()
         {
-            DisplayWizard<NCMBGenerateAPIKeyFile>("APIキーの再作成", "Generate File");
+            if (Instance == null)
+            {
+                Instance = DisplayWizard<NCMBGenerateAPIKeyFile>("NCMB APIキーファイル再作成", "APIキーファイルを生成", "シーン内のNCMBSettingsExtentedからキーを読み込む");
+
+                Instance.titleContent.image = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/NCMBExtensionPack/Textures/icon.png");
+            }
+
         }
 
         private void OnWizardCreate()
@@ -31,7 +38,7 @@ namespace NCMBExtension
 
             if (ncmbSettingsEx == null)
             {
-                Debug.Log("NCMBSettingsExtendedが存在しません。ウィザードから作成して下さい。");
+                Debug.Log("NCMBSettingsExtendedが存在しません。初期設定ウィザードから作成して下さい。");
             }
             else
             {
@@ -39,18 +46,41 @@ namespace NCMBExtension
             }
         }
 
+        void OnWizardOtherButton()
+        {
+            NCMBSettingsExtended ncmbSettingsEx = FindObjectOfType<NCMBSettingsExtended>();
+
+            if (ncmbSettingsEx != null)
+            {
+                applicationKey = ncmbSettingsEx.GetApplicationKey();
+                clientKey = ncmbSettingsEx.GetClientKey();
+            }
+            else
+            {
+                Debug.Log("NCMBSettingsExtended が存在しません。");
+            }
+        }
+
         public static void GenerateAPIKeyFile(string applicationKey, string clientKey, string apiKeyFilePath)
         {
-            APIKey apiKey = new APIKey();
-            apiKey.applicationKey = applicationKey;
-            apiKey.clientKey = clientKey;
+            if(applicationKey.Length != 64 || clientKey.Length != 64)
+            {
+                Debug.Log("APIキーの値が不正です。");
+            }
+            else
+            {
+                APIKey apiKey = new APIKey();
+                apiKey.applicationKey = applicationKey;
+                apiKey.clientKey = clientKey;
 
-            string jsondata = JsonUtility.ToJson(apiKey);
-            string path = "/Resources/" + apiKeyFilePath + ".bytes";
+                string jsondata = JsonUtility.ToJson(apiKey);
+                string path = "/Resources/" + apiKeyFilePath + ".bytes";
 
-            FileAESCrypter.EncryptToFile(jsondata, Application.dataPath + path);
+                FileAESCrypter.EncryptToFile(jsondata, Application.dataPath + path);
 
-            AssetDatabase.ImportAsset("Assets" + path);
+                AssetDatabase.ImportAsset("Assets" + path);
+                Debug.Log("APIキーの生成を行いました。");
+            }
         }
     }
 }
