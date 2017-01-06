@@ -1,4 +1,5 @@
 ﻿using NCMBExtension;
+using System;
 using UnityEngine;
 
 #pragma warning disable 0414 //利用されていないフィールドのWarningを表示しない//
@@ -99,21 +100,26 @@ public class DeviceTakeOverSample : MonoBehaviour
         canvas.ShowOverConnectingPanel();
     }
 
-    private void ShowUserNameCantUse()
+    private void ShowUserNameCantUse(object sender, EventArgs e)
     {
         canvas.HideConnectingPanel();
         canvas.ShowNewGameStateErrorMessage("別のユーザー名を作成して下さい");
     }
 
-
-    private void LogOutAndChangeMainState()
+    private void LogOutAndChangeMainState(object sender, EventArgs e)
     {
         //ログイン成功（アカウント作成成功）したら即ログアウトしてゲーム開始//
         ncmbUserAuth.Logout(LoadDataAndChangeMainState, LogOutError);
     }
 
+    //ボタンから呼ばれる//
+    public void Continue()
+    {
+        LoadDataAndChangeMainState(this, EventArgs.Empty);
+    }
+
     //コンティニュー//
-    public void LoadDataAndChangeMainState()
+    public void LoadDataAndChangeMainState(object sender, EventArgs e)
     {
         playerLevel = PlayerPrefs.GetInt("PlayerLevel", 1);
         playerExp = PlayerPrefs.GetInt("PlayerExp", 0);
@@ -122,7 +128,7 @@ public class DeviceTakeOverSample : MonoBehaviour
         OnMainState();
     }
 
-    private void LogOutError()
+    private void LogOutError(object sender, EventArgs e)
     {
         canvas.HideConnectingPanel();
     }
@@ -171,17 +177,17 @@ public class DeviceTakeOverSample : MonoBehaviour
         ncmbUserAuth.AutoLogin(CopySaveDataLocalToServer, TryAgainGenerate);
     }
 
-    private void CopySaveDataLocalToServer()
+    private void CopySaveDataLocalToServer(object sender, EventArgs e)
     {
         //NCMBにログイン成功したら、NCMBPlayerPrefsを使ってローカルデータをサーバーにセーブ//
         NCMBPlayerPrefs.CopyIntLocalToServer("PlayerLevel");
         NCMBPlayerPrefs.CopyIntLocalToServer("PlayerExp");
         NCMBPlayerPrefs.CopyIntLocalToServer("EnemyLevel");
         NCMBPlayerPrefs.CopyIntLocalToServer("EnemyHitPoint");
-        NCMBPlayerPrefs.Save(ShowTakeOverCodeAndLogOut, TryAgainGenerate);
+        NCMBPlayerPrefs.Save(ShowTakeOverCodeAndLogOut, TryAgainGenerateError);
     }
 
-    private void ShowTakeOverCodeAndLogOut()
+    private void ShowTakeOverCodeAndLogOut(object sender, EventArgs e)
     {
         //セーブに成功したら引き継ぎコードとしてパスワードを表示する//
         canvas.ShowTakeOverCodePanel(ncmbUserAuth.GetPasswordFromLoginData());
@@ -190,7 +196,7 @@ public class DeviceTakeOverSample : MonoBehaviour
         ncmbUserAuth.Logout(DeleteLocalData, TryAgainGenerate);
     }
 
-    private void DeleteLocalData()
+    private void DeleteLocalData(object sender, EventArgs e)
     {    
         //接続中...の非表示//
         canvas.HideConnectingPanel();
@@ -202,7 +208,13 @@ public class DeviceTakeOverSample : MonoBehaviour
         PlayerPrefs.DeleteAll();
     }
 
-    private void TryAgainGenerate()
+    private void TryAgainGenerateError(ConnectionEventArgs e)
+    {
+        //接続中...の非表示//
+        canvas.HideConnectingPanel();
+    }
+
+    private void TryAgainGenerate(object sender, EventArgs e)
     {
         //接続中...の非表示//
         canvas.HideConnectingPanel();
@@ -228,7 +240,7 @@ public class DeviceTakeOverSample : MonoBehaviour
         ncmbUserAuth.Login(userName, password, CopySaveDataServerToLocal, TryAgainInput);
     }
 
-    private void CopySaveDataServerToLocal()
+    private void CopySaveDataServerToLocal(object sender, EventArgs e)
     {         
         //サーバーからローカルへコピー//
         NCMBPlayerPrefs.CopyIntServerToLocal("PlayerLevel");
@@ -240,7 +252,7 @@ public class DeviceTakeOverSample : MonoBehaviour
         ncmbUserAuth.DeleteCurrentAccount(ReGenerateAccount, LogOutError);
     }
 
-    private void ReGenerateAccount()
+    private void ReGenerateAccount(object sender, EventArgs e)
     {
         //入力されたユーザー名でアカウントを再作成し、メインゲームへ遷移//
         ncmbUserAuth.AutoSignin(canvas.GetInputUserName(), LogOutAndChangeMainState, TryAgainInput);
@@ -249,7 +261,7 @@ public class DeviceTakeOverSample : MonoBehaviour
         canvas.ShowOverConnectingPanel();
     }
 
-    private void TryAgainInput()
+    private void TryAgainInput(object sender, EventArgs e)
     {
         canvas.HideConnectingPanel();
         canvas.ShowInputTakeOverStateErrorMessage("もう一度入力して下さい");

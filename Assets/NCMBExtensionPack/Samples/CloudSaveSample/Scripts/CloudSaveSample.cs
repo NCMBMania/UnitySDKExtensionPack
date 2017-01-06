@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using NCMB;
 using NCMBExtension;
+using System;
 
 public class CloudSaveSample : MonoBehaviour {
 
@@ -9,53 +10,49 @@ public class CloudSaveSample : MonoBehaviour {
 
     public void Start()
     {
-        OnLogin();
+        OnLogin(this, EventArgs.Empty);
     }
 
-    public void OnLogin()
+    public void OnLogin(object sender, EventArgs e)
     {
-        cloudSaveCanvas.DisavleConenctingScreen();
+        cloudSaveCanvas.DisableConenctingScreen();
         cloudSaveCanvas.SwitchLogin();
-    }
-
-    public void OnMain()
-    {
-        cloudSaveCanvas.DisavleConenctingScreen();
-        cloudSaveCanvas.SwicthMain();
-        cloudSaveCanvas.SetUserName(NCMBUser.CurrentUser.UserName);
     }
 
     public void SaveScore()
     {
         NCMBPlayerPrefs.SetInt("Score", cloudSaveCanvas.GetScore());
-        NCMBPlayerPrefs.Save(SaveSuccess, SaveFailed, ErrorMessage);
+        NCMBPlayerPrefs.Save(SaveSuccess, SaveFailed);
         cloudSaveCanvas.EnableConenctingScreen();
-    }
-
-    public void ErrorMessage(string message)
-    {
-        cloudSaveCanvas.SetErrorMessage(message);
-        cloudSaveCanvas.DisavleConenctingScreen();
     }
 
     public void GetScore()
     {
         Debug.Log("Get Score ");
 
-        string score = NCMBPlayerPrefs.GetInt("Score", errorMessageCallback: ErrorMessage).ToString();
+        string score = NCMBPlayerPrefs.GetInt("Score", failueEventHandler:FailueGetScore).ToString();
         cloudSaveCanvas.SetScore(score);
     }
+
+    public void FailueGetScore(ConnectionEventArgs eventArgs)
+    {
+        cloudSaveCanvas.SetErrorMessage(eventArgs.errorMessage);
+        cloudSaveCanvas.DisableConenctingScreen();
+    }
     
-    public void SaveSuccess()
+    public void SaveSuccess(object sender, EventArgs e)
     {
         Debug.Log("Success Save ");
-        cloudSaveCanvas.DisavleConenctingScreen();
+        cloudSaveCanvas.DisableConenctingScreen();
     }
 
-    public void SaveFailed()
-    {
+    public void SaveFailed(ConnectionEventArgs eventArgs)
+    { 
         Debug.Log("Save Failed");
-        cloudSaveCanvas.DisavleConenctingScreen();
+        cloudSaveCanvas.DisableConenctingScreen();
+
+        cloudSaveCanvas.SetErrorMessage(eventArgs.errorMessage);
+        cloudSaveCanvas.DisableConenctingScreen();
     }
 
     public void StartLogin()
@@ -63,8 +60,8 @@ public class CloudSaveSample : MonoBehaviour {
         string userName = cloudSaveCanvas.GetCurrentUserNameFieldText();
         string password = cloudSaveCanvas.GetCurrentPasswordFieldText();
 
-        ncmbUserAuth.Login(userName, password, OnMain, OnLoginRetry);
         cloudSaveCanvas.EnableConenctingScreen();
+        ncmbUserAuth.Login(userName, password, OnMain, OnLoginRetry);
     }
 
     public void StartSignin()
@@ -72,20 +69,28 @@ public class CloudSaveSample : MonoBehaviour {
         string userName = cloudSaveCanvas.GetCurrentUserNameFieldText();
         string password = cloudSaveCanvas.GetCurrentPasswordFieldText();
 
-        ncmbUserAuth.Signin(userName, password, OnMain, OnLoginRetry);
         cloudSaveCanvas.EnableConenctingScreen();
+        ncmbUserAuth.Signin(userName, password, OnMain, OnLoginRetry);
     }
 
-    public void OnLoginRetry()
+
+    public void OnMain(object sender, EventArgs e)
     {
-        cloudSaveCanvas.DisavleConenctingScreen();
+        cloudSaveCanvas.DisableConenctingScreen();
+        cloudSaveCanvas.SwicthMain();
+        cloudSaveCanvas.SetUserName(NCMBUser.CurrentUser.UserName);
+    }
+
+    public void OnLoginRetry(object sender, EventArgs e)
+    {
+        cloudSaveCanvas.DisableConenctingScreen();
         cloudSaveCanvas.EnableLoginRetry();
     }
 
     public void LogOut()
     {
-        ncmbUserAuth.Logout(OnLogin, OnLogin);
         cloudSaveCanvas.EnableConenctingScreen();
+        ncmbUserAuth.Logout(OnLogin, OnLogin);
     }
 
     public void Clear()

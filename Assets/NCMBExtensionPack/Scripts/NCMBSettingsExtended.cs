@@ -1,4 +1,14 @@
-﻿using NCMB;
+﻿/*
+Copyright (c) 2016-2017 Takaaki Ichijo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+using NCMB;
 using System;
 using UnityEngine;
 
@@ -34,14 +44,8 @@ namespace NCMBExtension
         }
 
         /// <summary>
-        /// ウィザードからNCMBSettings生むためのもの//
+        /// ウィザードからNCMBSettingsを生成する//
         /// </summary>
-        /// <param name="applicationKey"></param>
-        /// <param name="clientKey"></param>
-        /// <param name="usePush"></param>
-        /// <param name="useAnalytics"></param>
-        /// <param name="androidSenderId"></param>
-        /// <param name="responseValidation"></param>
         public void Initialize(string applicationKey, string clientKey, bool usePush, bool useAnalytics, string androidSenderId, bool responseValidation)
         {
             this.applicationKey = applicationKey;
@@ -80,7 +84,7 @@ namespace NCMBExtension
 }
 
 [Serializable]
-public class APIKey //←Json化後にクラス名を含んでresources.assetsに入るので、難読化の場合はクラス名を変更してください//
+public class APIKey //Json化後にクラス名を含んでresources.assetsに入ります。難読化をする場合は、クラス名を変更してください//
 {
     [SerializeField]
     public string applicationKey, clientKey;

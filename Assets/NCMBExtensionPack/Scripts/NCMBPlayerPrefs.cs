@@ -1,4 +1,14 @@
-﻿using NCMB;
+﻿/*
+Copyright (c) 2016-2017 Takaaki Ichijo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+using NCMB;
 using System;
 using UnityEngine;
 
@@ -15,9 +25,9 @@ namespace NCMBExtension
 
     public class NCMBPlayerPrefs
     {
-        public static int GetInt(string keyName, int defalutValue = 0, Action<string> errorMessageCallback = null)
+        public static int GetInt(string keyName, int defalutValue = 0, ConnectionEventHandler failueEventHandler = null)
         {
-            if (IsServerDataEnabled(keyName, errorMessageCallback))
+            if (IsServerDataEnabled(keyName, failueEventHandler))
             {
                 Debug.Log("Return server value");
                 //サーバーに格納される際Int64なのでキャストして取得//
@@ -66,9 +76,9 @@ namespace NCMBExtension
             PlayerPrefs.SetInt(keyName, value);
         }
 
-        public static string GetString(string keyName, string defalutValue = "", Action<string> errorMessageCallback = null)
+        public static string GetString(string keyName, string defalutValue = "", ConnectionEventHandler failueEventHandler = null)
         {
-            if (IsServerDataEnabled(keyName, errorMessageCallback))
+            if (IsServerDataEnabled(keyName, failueEventHandler))
             {
                 Debug.Log("Return server value");
                 return NCMBUser.CurrentUser[keyName].ToString();
@@ -113,9 +123,9 @@ namespace NCMBExtension
             PlayerPrefs.SetString(keyName, value);
         }
 
-        public static float GetFloat(string keyName, float defalutValue = 0f, Action<string> errorMessageCallback = null)
+        public static float GetFloat(string keyName, float defalutValue = 0f, ConnectionEventHandler failueEventHandler = null)
         {
-            if (IsServerDataEnabled(keyName, errorMessageCallback))
+            if (IsServerDataEnabled(keyName, failueEventHandler))
             {
                 Debug.Log("Return server value");
                 return (float)NCMBUser.CurrentUser[keyName];
@@ -160,47 +170,60 @@ namespace NCMBExtension
             PlayerPrefs.SetFloat(keyName, value);
         }
 
-        public static void Save(Action saveSuccessCallback = null, Action saveFailCallback = null, Action<string> errorMessageCallback = null)
+        public static void Save(EventHandler successEventHandler, ConnectionEventHandler failureEventHandler = null)
         {
             //まずローカルセーブ//
             SaveLocalTimeStamp();
             PlayerPrefs.Save();
 
-            //前回のセッショントークンを取得//
-            string previousToken = NCMBUser._getCurrentSessionToken();
+            //ネット接続があるか？//
+            if (Application.internetReachability == NetworkReachability.NotReachable)
+            {
+                if (failureEventHandler != null) failureEventHandler(new ConnectionEventArgs("ネットワークに接続していません。"));
+
+                return;
+            }
 
             //セーブ//
             NCMBUser.CurrentUser.SaveAsync((NCMBException e) =>
-            {
-                if (e == null)
                 {
-                    if (saveSuccessCallback != null) saveSuccessCallback();
-                }
-                else
-                {
-                    if (saveFailCallback != null) saveFailCallback();
-
-                    //通信後のセッショントークンを取得//
-                    string currentToken = NCMBUser._getCurrentSessionToken();
-
-                    if (previousToken != currentToken)
+                    if (e != null)
                     {
-                        if (errorMessageCallback != null)
+                        if (failureEventHandler != null)
                         {
-                            //途中で別の端末からログインされている可能性//
-                            errorMessageCallback("Token Doesn't mach");
+                            string errorMessage = string.Empty;
+
+                            if (e.ErrorCode == NCMBException.INCORRECT_HEADER)
+                            {
+                                errorMessage = "別の端末からログインされています。";
+                            }
+                            else if (string.IsNullOrEmpty(e.ErrorCode))
+                            {
+                                errorMessage = "通信が不安定です。";
+                            }
+                            else
+                            {
+                                Debug.Log("error: " + e.ErrorCode + " " + e.ErrorMessage);
+                            }
+
+                            failureEventHandler(new ConnectionEventArgs(errorMessage));
                         }
                     }
+                    else
+                    {
+                        if (successEventHandler != null) successEventHandler(null, EventArgs.Empty);
+                    }
                 }
-            });
+            );
         }
 
-        private static bool IsServerDataEnabled(string keyName, Action<string> errorMessageCallback = null)
+        private static bool IsServerDataEnabled(string keyName, ConnectionEventHandler failueEventHandler = null)
         {
+
             //ログインしてる？//
             if (NCMBUser.CurrentUser == null)
             {
-                if (errorMessageCallback != null) errorMessageCallback("Not Logged in");
+                if (failueEventHandler != null) failueEventHandler(new ConnectionEventArgs("ログインしていません。"));
                 return false;
             }
             else if (!NCMBUser.CurrentUser.UpdateDate.HasValue)
@@ -212,7 +235,7 @@ namespace NCMBExtension
             else if (!NCMBUser.CurrentUser.ContainsKey(keyName))
             {
                 //キーはある？//
-                if (errorMessageCallback != null) errorMessageCallback("Not cotains key" + keyName);
+                if (failueEventHandler != null) failueEventHandler(new ConnectionEventArgs("キー" + keyName + "は存在しません。"));
                 return false;
             }
             else
@@ -273,4 +296,16 @@ namespace NCMBExtension
             return DateTime.FromBinary(Convert.ToInt64(datetimeString));
         }
     }
+
+    public class ConnectionEventArgs : EventArgs
+    {
+        public ConnectionEventArgs(string errorMessage = "")
+        {
+            this.errorMessage = errorMessage;
+        }
+
+        public readonly string errorMessage;
+    }
+
+    public delegate void ConnectionEventHandler(ConnectionEventArgs eventArgs);
 }

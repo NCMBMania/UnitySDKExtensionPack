@@ -60,4 +60,8 @@ NCMBの会員管理へのフィールド追加とデータ保存をPlayerPrefs�
 ### 記述例
 ```
 NCMBPlayerPrefs.SetInt("PlayerHP", 100);
-NCMBPlayerPrefs.Save(SuccessCallback, FailedCallback);```
+NCMBPlayerPrefs.Save(SuccessCallback, FailedCallback);
+```
+
+# License
+MIT

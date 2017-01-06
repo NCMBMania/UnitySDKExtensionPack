@@ -66,7 +66,7 @@ public class CloudSaveCanvas : MonoBehaviour
         connectingPanel.SetActive(true);
     }
 
-    public void DisavleConenctingScreen()
+    public void DisableConenctingScreen()
     {
         connectingPanel.SetActive(false);
     }

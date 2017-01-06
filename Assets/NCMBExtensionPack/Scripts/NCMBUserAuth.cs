@@ -1,4 +1,14 @@
-﻿using NCMB;
+﻿/*
+Copyright (c) 2016-2017 Takaaki Ichijo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+using NCMB;
 using System;
 using System.IO;
 using UnityEngine;
@@ -30,8 +40,19 @@ namespace NCMBExtension
 #endif
         }
 
-        public void Login(string userName, string password, Action callbackSucces = null, Action callbackFailed = null)
+        public void Login(string userName, string password, EventHandler successEventHandler = null, EventHandler failureEventHandler = null)
         {
+            //ネット接続があるか？//
+            if (Application.internetReachability == NetworkReachability.NotReachable)
+            {
+                if (failureEventHandler != null) failureEventHandler(this, EventArgs.Empty);
+                //if (failureEventHandler != null) failureEventHandler(new ConnectionEventArgs("ネットワークに接続していません。"));
+
+                Debug.Log("ネットワークに接続していません。");
+
+                return;
+            }
+
             // ユーザー名とパスワードでログイン
             NCMBUser.LogInAsync(userName, password, (NCMBException e) =>
             {
@@ -39,13 +60,13 @@ namespace NCMBExtension
                 {
                     Debug.Log("ログインに失敗: " + e.ErrorMessage);
 
-                    if (callbackFailed != null) callbackFailed();
+                    if (failureEventHandler != null) failureEventHandler(this, EventArgs.Empty);
                 }
                 else
                 {
                     Debug.Log("ログインに成功！");
 
-                    if (callbackSucces != null) callbackSucces();
+                    if (successEventHandler != null) successEventHandler(this, EventArgs.Empty);
                 }
             });
         }
@@ -80,37 +101,47 @@ namespace NCMBExtension
             File.Delete(loginDataFilePath);
         }
 
-        public void DeleteCurrentAccount(Action callbackSucces, Action callbackFailed)
+        public void DeleteCurrentAccount(EventHandler successEventHandler = null, EventHandler failureEventHandler = null)
         {
+            //ネット接続があるか？//
+            if (Application.internetReachability == NetworkReachability.NotReachable)
+            {
+                if (failureEventHandler != null) failureEventHandler(this, EventArgs.Empty);
+
+                Debug.Log("ネットワークに接続していません。");
+
+                return;
+            }
+
             //ユーザーを削除します//
             NCMBUser.CurrentUser.DeleteAsync((NCMBException e) =>
             {
-                if (e == null)
+                if (e != null)
                 {
-                    if (callbackSucces != null) callbackSucces();
+                    if (failureEventHandler != null) failureEventHandler(this, EventArgs.Empty);
                 }
                 else
                 {
-                    if (callbackFailed != null) callbackFailed();
+                    if (successEventHandler != null) successEventHandler(this, EventArgs.Empty);
                 }
             });
-
         }
-        public void AutoSignin(Action callbackSucces = null, Action callbackFailed = null)
+
+        public void AutoSignin(EventHandler successEventHandler = null, EventHandler failureEventHandler = null)
         {
             string generatedUserName = Guid.NewGuid().ToString("N").Substring(0, 8);
-            AutoSignin(generatedUserName, callbackSucces, callbackFailed);
+            AutoSignin(generatedUserName, successEventHandler, failureEventHandler);
         }
 
-        public void AutoSignin(string userName, Action callbackSucces = null, Action callbackFailed = null)
+        public void AutoSignin(string userName, EventHandler successEventHandler = null, EventHandler failureEventHandler = null)
         {
             string generatedPassword = Guid.NewGuid().ToString("N").Substring(0, 8);
             Debug.Log("new pass" + generatedPassword);
 
             //ログイン成功した場合にLoginDataの保存処理を行う//
-            callbackSucces += () => SaveLoginData(userName, generatedPassword);
+            successEventHandler += new EventHandler((sender, e) => SaveLoginData(userName, generatedPassword));
 
-            Signin(userName, generatedPassword, callbackSucces, callbackFailed);
+            Signin(userName, generatedPassword, successEventHandler, failureEventHandler);
         }
 
         private void SaveLoginData(string userName, string password)
@@ -124,18 +155,28 @@ namespace NCMBExtension
             FileAESCrypter.EncryptToFile(strdata, loginDataFilePath);
         }
 
-        public void AutoLogin(Action callbackSucces = null, Action callbackFailed = null)
+        public void AutoLogin(EventHandler successEventHandler = null, EventHandler failureEventHandler = null)
         {
             string strdata;
             FileAESCrypter.DecryptFromFile(out strdata, loginDataFilePath);
 
             NCMBLoginData logindata = JsonUtility.FromJson<NCMBLoginData>(strdata);
 
-            Login(logindata.userName, logindata.password, callbackSucces, callbackFailed);
+            Login(logindata.userName, logindata.password, successEventHandler, failureEventHandler);
         }
 
-        public void Signin(string userName, string password, Action callbackSucces = null, Action callbackFailed = null)
+        public void Signin(string userName, string password, EventHandler successEventHandler = null, EventHandler failureEventHandler = null)
         {
+            //ネット接続があるか？//
+            if (Application.internetReachability == NetworkReachability.NotReachable)
+            {
+                if (failureEventHandler != null) failureEventHandler(this, EventArgs.Empty);
+
+                Debug.Log("ネットワークに接続していません。");
+
+                return;
+            }
+
             //NCMBUserのインスタンス作成
             NCMBUser user = new NCMBUser();
 
@@ -148,34 +189,43 @@ namespace NCMBExtension
             {
                 if (e != null)
                 {
-                    if (callbackFailed != null) callbackFailed();
+                    if (failureEventHandler != null) failureEventHandler(this, EventArgs.Empty);
                     Debug.Log("新規登録に失敗: " + e.ErrorMessage);
                 }
                 else
                 {
-                    if (callbackSucces != null) callbackSucces();
+                    if (successEventHandler != null) successEventHandler(this, EventArgs.Empty);
                     Debug.Log("新規登録に成功");
                 }
             });
         }
 
-        public void Logout(Action callbackSucces = null, Action callbackFailed = null)
+        public void Logout(EventHandler successEventHandler = null, EventHandler failureEventHandler = null)
         {
+            //ネット接続があるか？//
+            if (Application.internetReachability == NetworkReachability.NotReachable)
+            {
+                if (failureEventHandler != null) failureEventHandler(this, EventArgs.Empty);
+
+                Debug.Log("ネットワークに接続していません。");
+
+                return;
+            }
+
             NCMBUser.LogOutAsync((NCMBException e) =>
             {
                 if (e != null)
                 {
-                    if (callbackFailed != null) callbackFailed();
+                    if (failureEventHandler != null) failureEventHandler(this, EventArgs.Empty);
                     Debug.Log("ログアウトに失敗！");
                 }
                 else
                 {
-                    if (callbackSucces != null) callbackSucces();
+                    if (successEventHandler != null) successEventHandler(this, EventArgs.Empty);
                     Debug.Log("ログアウトに成功！");
                 }
             });
         }
-
     }
 
     [Serializable]
